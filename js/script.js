@@ -22,6 +22,28 @@ const init = async () => {
     goodsListElem.append(...cartsCocktail);
 };
 
+const scrollService = {
+    scrollPosition: 0,
+    disabledScroll() {
+        this.scrollPosition = window.scrollY;
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.body.style.cssText = `
+        overflow: hidden;
+        position:fixed;
+        top: -${this.scrollPosition}px;
+        left: 0;
+        height: 100vh;
+        width: 100vw;
+        padding-right: ${window.innerWidth - document.body.offsetWidth}px;
+        `;
+    },
+    enableScroll() {
+        document.body.style.cssText = ``;
+        window.scroll({ top: this.scrollPosition });
+        document.documentElement.style.scrollBehavior = '';
+    },
+};
+
 const modalController = ({ modal, btnOpen, time = 300}) => {
     const buttonElem = document.querySelector(btnOpen);
     const modalElem = document.querySelector(modal);
@@ -39,8 +61,10 @@ const modalController = ({ modal, btnOpen, time = 300}) => {
 
         if (target === modalElem || code === 'Escape') {
             modalElem.style.opacity = 0;
+            
             setTimeout(() => {
                 modalElem.style.visibility = 'hidden';
+                scrollService.enableScroll();
             }, time); 
             
             window.removeEventListener('keydown', closeModel);
@@ -51,6 +75,7 @@ const modalController = ({ modal, btnOpen, time = 300}) => {
         modalElem.style.visibility = 'visible';
         modalElem.style.opacity = 1;
         window.addEventListener('keydown', closeModel);
+        scrollService.disabledScroll();
     };
 
     buttonElem.addEventListener('click', openModel);
