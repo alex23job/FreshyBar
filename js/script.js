@@ -4,10 +4,10 @@ const init = async () => {
     modalController({
         modal: '.modal_order', btnOpen: '.header__btn-order'
     });
-    /*const headerBtnOrder = document.querySelector(".header__btn-orde");
-    headerBtnOrder.addEventListener('click', () => {
-        modal_order
-    });*/
+
+    modalController({
+        modal: '.modal_make', btnOpen: '.cocktail__btn-make'
+    });
 
     const goodsListElem = document.querySelector(".goods__list");
     const data = await getData();
