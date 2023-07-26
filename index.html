@@ -129,10 +129,10 @@
 
                 <form action="" class="order__form">
                     <label class="order__label">
-                        <input type="text" class="order__input" placeholder="Ваше имя">
+                        <input type="text" class="order__input" placeholder="Ваше имя" required name="name">
                     </label>
                     <label class="order__label">
-                        <input type="text" class="order__input" placeholder="Телефон">
+                        <input type="text" class="order__input" placeholder="Телефон" required name="phone">
                     </label>
 
                     <button class="btn order__submit">Отправить</button>
@@ -204,6 +204,7 @@
                         <div class="make__total">
                             <input class="make__input make__input_price" type="hidden" name="price" value="150">
                             <p class="make__total-price text-red">150&nbsp;₽</p>
+                            <input class="make__input make__input-size" type="hidden" name="size" value="300мл">
                             <p class="make__total-size">300мл</p>
                         </div>
                     </div>
