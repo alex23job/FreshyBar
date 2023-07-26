@@ -13,15 +13,39 @@ const price = {
     Пластиковый: 0,
 };
 
+const cartDataControl = {
+    getLocalStorage() {
+        return JSON.parse(localStorage.getItem('freshyBarCard') || '[]');
+    },
+    addLocalStorage(item) {
+        const cartData = this.getLocalStorage();
+        item.idls = Math.random().toString(36).substring(2, 8);
+        cartData.push(item);
+        localStorage.setItem('freshyBarCard', JSON.stringify(cartData));
+    },
+    removeLocalStorage(idls) {
+        const cartData = this.getLocalStorage();
+        const index = cartData.findIndex((item) => item.idls === idls);
+        if (index !== -1) {
+            cartData.splice(index, 1);
+        }
+        localStorage.setItem('freshyBarCard', JSON.stringify(cartData));
+    },
+    clearLocalStorage() {
+        localStorage.removeItem('freshyBarCard');
+    },
+};
+
 const init = async () => {
     modalController({
         modal: '.modal_order', btnOpen: '.header__btn-order'
     });
 
-    calculateMakeYourOwn();
+    const { resetForm: resetFormMakeYourOwn } = calculateMakeYourOwn();
 
     modalController({
-        modal: '.modal_make-your-own', btnOpen: '.cocktail__btn-make'
+        modal: '.modal_make-your-own', btnOpen: '.cocktail__btn-make',
+        close: resetFormMakeYourOwn,
     });
 
     const goodsListElem = document.querySelector(".goods__list");
@@ -84,6 +108,9 @@ const calculateAdd = () => {
     };
 
     formAdd.addEventListener('change', handlerChange);
+    formControl(formAdd, () => {
+        modalAdd.closeModel('close');
+    });
 
     const fillInForm = data => {
         makeTitle.textContent = data.title;
@@ -131,19 +158,53 @@ const calculateTotalPrice = (form, startPrice) => {
     return totalPrice;
 };
 
+const formControl = (form, cb) => {
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = getFormData(form);
+        cartDataControl.addLocalStorage(data);
+        if (cb) {
+            cb();
+        }
+    });
+}
+
 const calculateMakeYourOwn = () => {
-    const formMakeOwn = document.querySelector('.make__form_make-your-own');
+    const modalMakeOwn = document.querySelector('.modal_make-your-own');
+    const formMakeOwn = modalMakeOwn.querySelector('.make__form_make-your-own');
+    const makeInputTitle = modalMakeOwn.querySelector('.make__input-title');
     const makeInputPrice = formMakeOwn.querySelector('.make__input_price');
     const makeTotalPrice = formMakeOwn.querySelector('.make__total-price');
+    const makeAddBtn = modalMakeOwn.querySelector('.make__add-btn');    
 
     const handlerChange = () => {
         const totalPrice = calculateTotalPrice(formMakeOwn, 150);
+        const data = getFormData(formMakeOwn);
+        if (data.ingredients) {
+            const ingredients = Array.isArray(data.ingredients)
+            ? data.ingredients.join(', ') : data.ingredients;
+            makeInputTitle.value = `Конструктор: ${ingredients}`;
+            makeAddBtn.disabled = false;
+        } else {
+            makeAddBtn.disabled = true;
+        }
         makeInputPrice.value = totalPrice;
         makeTotalPrice.textContent = `${totalPrice} ₽`;
     };
 
     formMakeOwn.addEventListener('change', handlerChange);
+    formControl(formMakeOwn, () => {
+        modalMakeOwn.closeModel('close');
+    });
     handlerChange();
+
+    const resetForm = () => {
+        makeTotalPrice.textContent = '';
+        makeAddBtn.disabled = true;
+        formMakeOwn.reset();
+    };
+    
+    return {resetForm};
 }
 
 const scrollService = {
@@ -183,7 +244,7 @@ const modalController = ({ modal, btnOpen, time = 300, open, close}) => {
         const target = event.target;
         const code = event.code;
 
-        if (target === modalElem || code === 'Escape') {
+        if (event === 'close' || target === modalElem || code === 'Escape') {
             modalElem.style.opacity = 0;
             
             setTimeout(() => {
@@ -213,6 +274,9 @@ const modalController = ({ modal, btnOpen, time = 300, open, close}) => {
         buttonElem.addEventListener('click', openModel);
     });    
     modalElem.addEventListener('click', closeModel);
+
+    modalElem.closeModel = closeModel;
+    modalElem.openModel = openModel;
 
     return {openModel, closeModel};
 }; 
