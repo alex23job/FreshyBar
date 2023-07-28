@@ -77,8 +77,9 @@ const init = async () => {
 const createCartItem = (item) => {
     const li = document.createElement('li');
     li.classList.add('order__item');
+    // let imgURL = "img/make_your_own.jpg";
     li.innerHTML = `
-        <img src="img/kiwi_and_apple.jpg" alt="${item.title}" class="order__img">
+        <img src="${item.image}" alt="${item.title}" class="order__img">
         <div class="order__info">
             <h3 class="order__name">${item.title}</h3>
 
@@ -87,7 +88,7 @@ const createCartItem = (item) => {
                 <li class="order__topping-item">${item.cup}</li>
                 ${
                     item.topping ? (Array.isArray(item.topping) 
-                    ? item.topping.map((topping) => `<li class="order__topping-item">${topping}</li>`)
+                    ? `<li class="order__topping-item">${item.topping.join(', ')}</li>`
                     : `<li class="order__topping-item">${item.topping}</li>`)
                     : ''
                 }
@@ -98,6 +99,12 @@ const createCartItem = (item) => {
         <p class="order__price">${item.price}&nbsp;₽</p>
     `;
     return li;
+};
+
+const deleteItem = async (e) => {
+    const idls = e.currentTarget.getAttribute('data-idls');
+    cartDataControl.removeLocalStorage(idls);
+    renderCart();
 };
 
 const renderCart = () => {
@@ -114,6 +121,13 @@ const renderCart = () => {
 
     orderListData.forEach(item => {
         orderList.append(createCartItem(item));
+    });
+
+
+    const deleteButtons = orderList.querySelectorAll('.order__item-delete');
+    
+    deleteButtons.forEach(item => {
+        item.addEventListener('click', deleteItem);
     });
 
     orderTotalPrice.textContent = `${orderListData.reduce((acc, item) => acc + +item.price, 0)} ₽`;
@@ -167,6 +181,7 @@ const calculateAdd = () => {
     const formAdd = document.querySelector('.make__form_add');
     const makeTitle = modalAdd.querySelector('.make__title');
     const makeInputTitle = modalAdd.querySelector('.make__input-title');
+    const makeInputImage = modalAdd.querySelector('.make__input-image');
     const makeTotalPrice = modalAdd.querySelector('.make__total-price');
     const makeInputStartPrice = modalAdd.querySelector('.make__input-start-price');
     const makeInputPrice = modalAdd.querySelector('.make__input-price');
@@ -187,6 +202,7 @@ const calculateAdd = () => {
     const fillInForm = data => {
         makeTitle.textContent = data.title;
         makeInputTitle.value = data.title;
+        makeInputImage.value = `${API_URL}${data.image}`;
         makeTotalPrice.textContent = `${data.price} ₽`;
         makeInputStartPrice.value = data.price;
         makeInputPrice.value = data.price;
